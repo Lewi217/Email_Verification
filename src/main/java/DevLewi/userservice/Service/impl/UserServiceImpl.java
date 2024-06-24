@@ -13,7 +13,7 @@ import org.springframework.stereotype.Service;
 public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final ConfirmationRepository confirmationRepository;
-    private final EmailService emailService;
+   // private final EmailService emailService;
 
     @Override
     public User saveUser(User user) {
@@ -26,9 +26,18 @@ public class UserServiceImpl implements UserService {
         Confirmation confirmation = new Confirmation(user);
         confirmationRepository.save(confirmation);
 
-        // Assuming EmailService has a method to send confirmation email
-        emailService.sendConfirmationEmail(user.getEmail(), confirmation.getToken());
+       /* TODO Send email to user with token*/
 
-        return user;
+        return null;
+    }
+
+    @Override
+    public Boolean verifyToken(String token){
+        Confirmation confirmation = confirmationRepository.findByToken(token);
+        User user = userRepository.findByEmailIgnoreCase(confirmation.getUser().getEmail());
+        user.setEnabled(true);
+        userRepository.save(user);
+       // confirmationRepository.delete(confirmation);
+        return Boolean.TRUE;
     }
 }
