@@ -8,3 +8,10 @@ POSTGRES_SQL_DB: spcloud
 #Server
 SERVER_PORT: 9000
 ACTIVE_PROFILE: dev
+
+#Email Config
+EMAIL_HOST: smtp.gmail.com
+EMAIL_PORT: 587
+EMAIL_ID: wanjohilewi7@gmail.com
+EMAIL_PASSWORD: qwcn fahs zyah msfy
+VERIFY_EMAIL_HOST: http://localhost:${SERVER_PORT}

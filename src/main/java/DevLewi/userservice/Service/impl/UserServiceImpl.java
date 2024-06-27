@@ -1,5 +1,6 @@
 package DevLewi.userservice.Service.impl;
 
+import DevLewi.userservice.Service.EmailService;
 import DevLewi.userservice.Service.UserService;
 import DevLewi.userservice.domain.Confirmation;
 import DevLewi.userservice.domain.User;
@@ -13,7 +14,7 @@ import org.springframework.stereotype.Service;
 public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final ConfirmationRepository confirmationRepository;
-   // private final EmailService emailService;
+    private final EmailService emailService;
 
     @Override
     public User saveUser(User user) {
@@ -27,8 +28,9 @@ public class UserServiceImpl implements UserService {
         confirmationRepository.save(confirmation);
 
        /* TODO Send email to user with token*/
+        emailService.sendHtmlEmailWithEmbeddedFiles(user.getName(), user.getEmail(), confirmation.getToken());
 
-        return null;
+        return user;
     }
 
     @Override

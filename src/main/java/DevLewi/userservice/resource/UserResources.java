@@ -15,7 +15,7 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/users")
 @RequiredArgsConstructor
-public class UserResource {
+public class UserResources {
     private final UserService userService;
 
     @PostMapping
@@ -33,7 +33,7 @@ public class UserResource {
     }
 
     @GetMapping
-    public ResponseEntity<HttpResponse> confirmUserAccount(@RequestParam("token") String token ) {
+    public ResponseEntity<HttpResponse> confirmUserAccount(@RequestParam("token") String token) {
         Boolean isSuccess = userService.verifyToken(token);
         return ResponseEntity.ok().body(
                 HttpResponse.builder()
@@ -46,3 +46,4 @@ public class UserResource {
         );
     }
 }
+
