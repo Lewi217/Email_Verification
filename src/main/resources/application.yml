@@ -18,16 +18,15 @@ spring:
         globally_quoted_identifiers: true
         dialect: org.hibernate.dialect.PostgreSQLDialect
         format_sql: true
-
   mail:
     host: ${EMAIL_HOST}
     port: ${EMAIL_PORT}
     username: ${EMAIL_ID}
-    password: {EMAIL_PASSWORD}
+    password: ${EMAIL_PASSWORD}
     default-encoding: UTF-8
     properties:
       mail:
-        mine:
+        mime:
           charset: UTF
         smtp:
           writetimeout: 10000
