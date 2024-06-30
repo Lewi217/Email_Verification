@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/users")
+@RequestMapping("/verify")
 @RequiredArgsConstructor
 public class UserResources {
     private final UserService userService;
