@@ -10,14 +10,19 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.thymeleaf.TemplateEngine;
+import org.thymeleaf.context.Context;
 
 import java.io.File;
+
+import static DevLewi.userservice.utils.EmailUtils.getVerificationUrl;
 
 @Service
 @RequiredArgsConstructor
 public class EmailServiceImpl implements EmailService {
 
-    public static final String UTF_8_ENCODING = "UTF_8_ENCODING";
+    public static final String EMAIL_TEMPLATE = "emailtemplate";
+
     @Value("${spring.mail.verify.host}")
     private String host;
 
@@ -25,8 +30,7 @@ public class EmailServiceImpl implements EmailService {
     private String fromEmail;
 
     private final JavaMailSender emailSender;
-
-
+    private final TemplateEngine templateEngine;
 
     @Override
     @Async
@@ -50,18 +54,23 @@ public class EmailServiceImpl implements EmailService {
     @Async
     public void sendMimeMessageWithAttachments(String name, String to, String token) {
         try {
-            MimeMessage message =  getMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(message,true, UTF_8_ENCODING);
+            MimeMessage message = getMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
             helper.setPriority(1);
             helper.setFrom(fromEmail);
             helper.setTo(to);
             helper.setSubject("Verification Email");
             helper.setText("Dear " + name + ",\n\nPlease verify your email by clicking the following link: "
                     + host + "/verify?token=" + token + "\n\nBest regards,\nYour Company");
-            //Add attachments
+
+            // Add attachments
             FileSystemResource euro = new FileSystemResource(new File(System.getProperty("user.home") + "/Downloads/images/euro.jpeg"));
             FileSystemResource portugal = new FileSystemResource(new File(System.getProperty("user.home") + "/Downloads/images/portugal.webp"));
             FileSystemResource symbol = new FileSystemResource(new File(System.getProperty("user.home") + "/Downloads/images/symbol.jpg"));
+
+            helper.addAttachment("euro.jpeg", euro);
+            helper.addAttachment("portugal.webp", portugal);
+            helper.addAttachment("symbol.jpg", symbol);
 
             emailSender.send(message);
         } catch (Exception exception) {
@@ -70,25 +79,78 @@ public class EmailServiceImpl implements EmailService {
         }
     }
 
-
-
     @Override
     @Async
     public void sendMimeMessageWithEmbeddedFiles(String name, String to, String token) {
+        try {
+            MimeMessage message = getMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+            helper.setPriority(1);
+            helper.setFrom(fromEmail);
+            helper.setTo(to);
+            helper.setSubject("Verification Email");
+            helper.setText("Dear " + name + ",\n\nPlease verify your email by clicking the following link: "
+                    + host + "/verify?token=" + token + "\n\nBest regards,\nYour Company");
 
+            // Add embedded files
+            FileSystemResource euro = new FileSystemResource(new File(System.getProperty("user.home") + "/Downloads/images/euro.jpeg"));
+            FileSystemResource portugal = new FileSystemResource(new File(System.getProperty("user.home") + "/Downloads/images/portugal.webp"));
+            FileSystemResource symbol = new FileSystemResource(new File(System.getProperty("user.home") + "/Downloads/images/symbol.jpg"));
+
+            helper.addInline(getContentId(euro.getFilename()), euro);
+            helper.addInline(getContentId(portugal.getFilename()), portugal);
+            helper.addInline(getContentId(symbol.getFilename()), symbol);
+
+            emailSender.send(message);
+        } catch (Exception exception) {
+            System.out.println(exception.getMessage());
+            throw new RuntimeException(exception.getMessage());
+        }
     }
 
     @Override
     @Async
     public void sendHtmlEmail(String name, String to, String token) {
+        try {
+            Context context = new Context();
+            context.setVariable("name", name);
+            context.setVariable("url", getVerificationUrl(host, token));
 
+            String text = templateEngine.process(EMAIL_TEMPLATE, context);
+
+            MimeMessage message = getMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+            helper.setPriority(1);
+            helper.setFrom(fromEmail);
+            helper.setTo(to);
+            helper.setSubject("Verification Email");
+            helper.setText(text, true);
+            FileSystemResource euro = new FileSystemResource(new File(System.getProperty("user.home") + "/Downloads/images/euro.jpeg"));
+            FileSystemResource portugal = new FileSystemResource(new File(System.getProperty("user.home") + "/Downloads/images/portugal.webp"));
+            FileSystemResource symbol = new FileSystemResource(new File(System.getProperty("user.home") + "/Downloads/images/symbol.jpg"));
+
+            helper.addAttachment("euro.jpeg", euro);
+            helper.addAttachment("portugal.webp", portugal);
+            helper.addAttachment("symbol.jpg", symbol);
+
+            emailSender.send(message);
+        } catch (Exception exception) {
+            System.out.println(exception.getMessage());
+            throw new RuntimeException(exception.getMessage());
+        }
     }
 
     @Override
     @Async
-    public void sendHtmlEmailWithEmbeddedFiles(String name, String to, String token) {}
+    public void sendHtmlEmailWithEmbeddedFiles(String name, String to, String token) {
+        // Implementation
+    }
 
-    private MimeMessage getMimeMessage(){
+    private MimeMessage getMimeMessage() {
         return emailSender.createMimeMessage();
+    }
+
+    private String getContentId(String filename) {
+        return "<" + filename + ">";
     }
 }
